@@ -160,6 +160,7 @@ class Pocket48MonitorPlugin(Star):
 
                     if new_messages:
                         try:
+                            new_messages.reverse()
                             await self._send_to_groups(new_messages)
                             if latest_time > last_time:
                                 self.monitor_state.set_last_time(channel_id, latest_time)
@@ -169,7 +170,7 @@ class Pocket48MonitorPlugin(Star):
             except Exception as e:
                 logger.error(f"检查房间 {channel_info.get('channelName')} 消息失败: {e}")
 
-    # ======================
+    # ======================s
     # 发送（已修复）
     # ======================
     async def _get_client(self):
