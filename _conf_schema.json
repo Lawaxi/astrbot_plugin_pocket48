@@ -1,0 +1,62 @@
+{
+  "target_groups": {
+    "type": "string",
+    "description": "目标QQ群号（逗号分隔）",
+    "default": "764687233"
+  },
+  "login_type": {
+    "type": "string",
+    "description": "登录方式：account 或 token",
+    "default": "token"
+  },
+  "account": {
+    "type": "string",
+    "description": "口袋48账号（当login_type为account时需要）",
+    "default": ""
+  },
+  "password": {
+    "type": "string",
+    "description": "口袋48密码（当login_type为account时需要）",
+    "default": ""
+  },
+  "check_interval": {
+    "type": "int",
+    "description": "检查间隔（秒）",
+    "default": 60
+  },
+  "max_messages": {
+    "type": "int",
+    "description": "每次最多获取消息数",
+    "default": 10
+  },
+  "include_types": {
+    "type": "string",
+    "description": "包含的消息类型（逗号分隔，留空表示全部）",
+    "default": ""
+  },
+  "exclude_types": {
+    "type": "string",
+    "description": "排除的消息类型（逗号分隔）",
+    "default": ""
+  },
+  "message_format": {
+    "type": "text",
+    "description": "消息格式模板",
+    "default": "【%s】%s: %s"
+  },
+  "reply_format": {
+    "type": "text",
+    "description": "回复消息格式",
+    "default": "【回复】%s 回复 %s: %s"
+  },
+  "live_format": {
+    "type": "text",
+    "description": "直播消息格式",
+    "default": "【直播】%s 发起直播：%s"
+  },
+  "flipcard_format": {
+    "type": "text",
+    "description": "翻牌消息格式",
+    "default": "【翻牌】%s\nQ: %s\nA: %s"
+  }
+}
