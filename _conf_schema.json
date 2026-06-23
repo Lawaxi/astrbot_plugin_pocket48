@@ -42,21 +42,26 @@
   "message_format": {
     "type": "text",
     "description": "消息格式模板",
-    "default": "【%s】%s: %s"
+    "default": "【%s】\n%s: %s"
   },
   "reply_format": {
     "type": "text",
     "description": "回复消息格式",
-    "default": "【回复】%s 回复 %s: %s"
+    "default": "【回复】\n%s 回复 %s: %s"
   },
   "live_format": {
     "type": "text",
     "description": "直播消息格式",
-    "default": "【直播】%s 发起直播：%s"
+    "default": "【直播】\n%s 发起直播：%s"
   },
   "flipcard_format": {
     "type": "text",
     "description": "翻牌消息格式",
-    "default": "【翻牌】%s\nQ: %s\nA: %s"
+    "default": "【翻牌】\n%s\nQ: %s\nA: %s"
+  },
+  "time_format": {
+    "type": "text",
+    "description": "推送时间格式",
+    "default": "\n%Y-%m-%d %H:%M:%S"
   }
 }
