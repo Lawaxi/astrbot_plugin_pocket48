@@ -1,4 +1,5 @@
 import asyncio
+import requests
 from astrbot.api.star import Star, Context
 from astrbot.api import logger, AstrBotConfig
 from astrbot.api.event import filter, AstrMessageEvent
@@ -170,11 +171,11 @@ class Pocket48MonitorPlugin(Star):
             except Exception as e:
                 logger.error(f"检查房间 {channel_info.get('channelName')} 消息失败: {e}")
 
-    # ======================s
-    # 发送（已修复）
     # ======================
+    # 发送
+    # ======================
+
     async def _get_client(self):
-        # 等价参考插件 wait_for_platform_ready
         for adapter_name in ("AIOCQHTTP", "QQ_OFFICIAL", "SATORI"):
             adapter_type = getattr(PlatformAdapterType, adapter_name, None)
             if not adapter_type:
@@ -186,22 +187,109 @@ class Pocket48MonitorPlugin(Star):
 
         return None
 
+    def _download_image(self, image_url: str) -> bytes | None:
+        if not image_url:
+            return None
+        try:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Referer": "https://www.snh48.com/"
+            }
+            resp = requests.get(image_url, headers=headers, timeout=5)
+            if resp.status_code == 200:
+                return resp.content
+            else:
+                logger.info(f"【图片下载提示】状态码异常: {resp.status_code}，本次不插入图片")
+                return None
+        except Exception as img_err:
+            logger.info(f"【图片下载失败】: {img_err}，已自动跳过图片展示")
+            return None
 
-    async def _send_to_groups(self, messages: list[str]):
+    def _build_message_components(self, msg_dict: dict) -> list | None:
+        msg_type = msg_dict.get('msg_type')
+        text = msg_dict.get('text')
+        
+        # 纯视频/音频消息，只发送URL
+        if msg_type == 'VIDEO' and msg_dict.get('video_url'):
+            return [Comp.Video(msg_dict['video_url'])]
+        
+        if msg_type == 'AUDIO' and msg_dict.get('audio_url'):
+            return [Comp.Audio(msg_dict['audio_url'])]
+        
+        # 有图片的消息
+        if msg_dict.get('image_url') and '[image]' in (text or ''):
+            image_url = msg_dict['image_url']
+            image_data = self._download_image(image_url)
+            
+            if image_data:
+                parts = text.split('[image]')
+                components = []
+                
+                for i, part in enumerate(parts):
+                    if part:
+                        components.append(Comp.Plain(part))
+                    if i < len(parts) - 1:
+                        components.append(Comp.Image.fromBytes(image_data))
+                
+                return components if components else None
+            else:
+                return [Comp.Plain(text)] if text else None
+        
+        # 回复音频消息
+        if msg_type in ('AUDIO_REPLY', 'AUDIO_GIFT_REPLY') and msg_dict.get('audio_url'):
+            return [
+                Comp.Audio(msg_dict['audio_url']),
+                Comp.Plain('\n' + text) if text else None
+            ]
+        
+        # 翻牌音频/视频
+        if msg_type == 'FLIPCARD_AUDIO' and msg_dict.get('audio_url'):
+            return [
+                Comp.Audio(msg_dict['audio_url']),
+                Comp.Plain('\n' + text) if text else None
+            ]
+        
+        if msg_type == 'FLIPCARD_VIDEO' and msg_dict.get('video_url'):
+            return [
+                Comp.Video(msg_dict['video_url']),
+                Comp.Plain('\n' + text) if text else None
+            ]
+        
+        # 普通文本消息
+        if text:
+            return [Comp.Plain(text)]
+        
+        return None
+
+    async def _send_to_groups(self, messages: list[dict]):
         client = await self._get_client()
 
         if not client:
             raise RuntimeError("未找到可用 platform client")
 
-        for message in messages:
+        for msg_dict in messages:
+            components = self._build_message_components(msg_dict)
+            
+            if not components:
+                continue
+            
+            # 过滤None组件
+            components = [c for c in components if c is not None]
+            
+            if not components:
+                continue
+            
             for group_id in self.target_groups:
-                logger.info(f"发送群消息 {group_id}：{message}")
+                logger.info(f"发送群消息 {group_id}：{msg_dict.get('msg_type')}")
 
-                result = await client.api.call_action(
-                    "send_group_msg",
-                    group_id=int(group_id),
-                    message=message,
-                )
+                try:
+                    result = await client.api.call_action(
+                        "send_group_msg",
+                        group_id=int(group_id),
+                        message=components,
+                    )
 
-                if not result:
-                    raise RuntimeError(f"发送失败: result为空")
+                    if not result:
+                        logger.warning(f"发送失败: result为空")
+                except Exception as e:
+                    logger.error(f"发送消息异常: {e}")

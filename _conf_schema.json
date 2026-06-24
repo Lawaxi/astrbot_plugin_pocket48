@@ -41,23 +41,38 @@
   },
   "message_format": {
     "type": "text",
-    "description": "消息格式模板",
-    "default": "【%s】\n%s: %s"
+    "description": "消息格式",
+    "default": "【[channel]】\n[user]: [content]"
+  },
+  "gift_format": {
+    "type": "text",
+    "description": "礼物消息格式",
+    "default": "【[channel]】\n[user]: 送给 [gift_to] [gift_num]个[gift_name]"
   },
   "reply_format": {
     "type": "text",
     "description": "回复消息格式",
-    "default": "【回复】\n%s 回复 %s: %s"
+    "default": "【[channel]】\n[user]: [content]\n------\n[reply_user]: [reply_content]"
   },
   "live_format": {
     "type": "text",
     "description": "直播消息格式",
-    "default": "【直播】\n%s 发起直播：%s"
+    "default": "【[channel]】\n[user] 发起直播：[image]\n[live_title]"
+  },
+  "image_format": {
+    "type": "text",
+    "description": "图片消息格式",
+    "default": "【[channel]】\n[user]: [image]"
   },
   "flipcard_format": {
     "type": "text",
     "description": "翻牌消息格式",
-    "default": "【翻牌】\n%s\nQ: %s\nA: %s"
+    "default": "【[channel]】翻牌\n[user]: [answer]\n------\nQ: [question]"
+  },
+  "flipcard_reply_format": {
+    "type": "text",
+    "description": "翻牌回复格式",
+    "default": "------\nQ: [question]"
   },
   "time_format": {
     "type": "text",
